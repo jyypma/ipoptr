@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2010 Jelmer Ypma. All Rights Reserved.
- * This code is published under the Common Public License.
+ * This code is published under the Eclipse Public License.
  *
  * file:   IpoptRNLP.hpp
  * author: Jelmer Ypma
@@ -17,7 +17,7 @@
 #ifndef __IpoptRNLP_HPP__
 #define __IpoptRNLP_HPP__
 
-#include "IpTNLP.hpp"
+#include "IpTNLP.hpp"               // ISA TNLP
 
 #include <R.h>
 #include <Rdefines.h>

@@ -1,9 +1,12 @@
 # Copyright (C) 2010 Jelmer Ypma. All Rights Reserved.
-# This code is published under the Common Public License.
+# This code is published under the Eclipse Public License.
 #
 # File:   Makevars.in
 # Author: Jelmer Ypma
 # Date:   14 April 2010
+#
+# Changelog:
+# 30/01/2011 - Changed LIBS to IPOPT_LIBS and INCL to IPOPT_INCL, since R re-defines LIBS and INCL.
 
 
 # C++ Compiler command
@@ -13,22 +16,16 @@ CXX = @CXX@
 IPOPT_CXXFLAGS = @CXXFLAGS@
 
 # additional C++ Compiler options for linking
-IPOPT_CXXLINKFLAGS = @CXXLINKFLAGS@
+IPOPT_CXXLINKFLAGS = @RPATH_FLAGS@
 
-# Directory with header files
-IPOPT_INCDIR = @includedir@
+# Include directories (we use the CYGPATH_W variables to allow compilation with Windows compilers)
+@COIN_HAS_PKGCONFIG_TRUE@IPOPT_INCL = `PKG_CONFIG_PATH=@COIN_PKG_CONFIG_PATH@ @PKG_CONFIG@ --cflags ipopt`
+@COIN_HAS_PKGCONFIG_FALSE@IPOPT_INCL = -I`$(CYGPATH_W) @abs_include_dir@/coin` @IPOPTLIB_CFLAGS_INSTALLED@
 
-# Directory with libipopt.a
-IPOPT_LIBDIR = @libdir@
-exec_prefix = @exec_prefix@
-prefix = @prefix@
-
-# Libraries necessary to link with IPOPT
-IPOPT_LIBS = @ipoptlib@
-
-# Necessary Include dirs (we use the CYGPATH_W variables to allow
-# compilation with Windows compilers)
-IPOPT_INCL = @ipoptinc@
+# Linker flags
+@COIN_HAS_PKGCONFIG_TRUE@IPOPT_LIBS = `PKG_CONFIG_PATH=@COIN_PKG_CONFIG_PATH@ @PKG_CONFIG@ --libs ipopt`
+@COIN_HAS_PKGCONFIG_FALSE@@COIN_CXX_IS_CL_TRUE@IPOPT_LIBS = /link /libpath:`$(CYGPATH_W) @abs_lib_dir@` libipopt.lib @IPOPTLIB_LIBS_INSTALLED@
+@COIN_HAS_PKGCONFIG_FALSE@@COIN_CXX_IS_CL_FALSE@IPOPT_LIBS = -L@abs_lib_dir@ -lipopt @IPOPTLIB_LIBS_INSTALLED@
 
 # The following is necessary under cygwin, if native compilers are used
 CYGPATH_W = @CYGPATH_W@

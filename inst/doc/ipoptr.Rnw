@@ -38,7 +38,7 @@ options(SweaveHooks=list(fig=function()
 @
 
 \begin{abstract}
-This document describes how to use \texttt{ipoptr}, which is an R interface to Ipopt (Interior Point Optimizer). Ipopt is an open source software package for large-scale nonlinear optimization \cite{WachterBiegler2006}. It can be used to solve general nonlinear programming problems with nonlinear constraints and lower and upper bounds for the controls. Ipopt is written in C++ and is released as open source code under the Common Public License (CPL). It is available from the COIN-OR initiative. The code has been written by Carl Laird and Andreas W\"achter, who is the COIN project leader for Ipopt. 
+This document describes how to use \texttt{ipoptr}, which is an R interface to Ipopt (Interior Point Optimizer). Ipopt is an open source software package for large-scale nonlinear optimization \cite{WachterBiegler2006}. It can be used to solve general nonlinear programming problems with nonlinear constraints and lower and upper bounds for the controls. Ipopt is written in C++ and is released as open source code under the Eclipse Public License (EPL). It is available from the COIN-OR initiative. The code has been written by Carl Laird and Andreas W\"achter, who is the COIN project leader for Ipopt. 
 \end{abstract}
 
 \section{Introduction}
@@ -53,27 +53,28 @@ where $f(x): R^n \rightarrow R$ is the objective function, and $g(x): R^n \right
 This vignette describes how to formulate minimization problems to be solved with the R interface to Ipopt. If you want to use the C++ interface directly or are interested in the Matlab interface, there are other sources of documentation avialable. Some of the information here is heavily based on the Ipopt Wiki\footnote{\texttt{https://projects.coin-or.org/Ipopt}} and generally that is a good source to find additional information, for instance on which options to use. All credit for implementing the C++ code for Ipopt should go to Andreas W\"achter and Carl Laird. Please show your appreciation by citing their paper.
 
 \section{Installation}
-Installing the \texttt{ipoptr} package is not as straightforward as most other R packages, because it depends on Ipopt, which has to be installed separately. Ipopt and the R interface to Ipopt are distributed separately because of differences in licenses between Ipopt, some of the libraries it depends on, and R. There are ways to simplify the Ipopt part of the installation by using some of the pre-compiled libraries of Ipopt with Mumps\footnote{Any help to simplify the installation process is appreciated and if someone uses the pre-compiled libraries and has a \texttt{Makefile}, please let me know.}. To install (and compile) Ipopt and the R interface a C/C++ compiler has to be available. Detailed installation instructions are available on \texttt{http://www.coin-or.org/Ipopt/documentation}. On Windows I was succesful using MSYS, on Ubuntu no additional tools were needed. 
+Installing the \texttt{ipoptr} package is not as straightforward as most other R packages, because it depends on Ipopt. To install (and compile) Ipopt and the R interface a C/C++ compiler has to be available. On Windows I was succesful using MSYS to compile Ipopt and then use Rtools\footnote{\texttt{http://www.murdoch-sutherland.com/Rtools/}} to compile the R interface from source. On Ubuntu no additional tools were needed.
 
-In the description of the installation of the R interface, I will assume that you have a working installation of Ipopt. You need to be able to compile R packages from source. Since Ipopt was already successfully installed, compilers are probably available. On Windows platforms Rtools is needed to compile R packages from source\footnote{\texttt{http://www.murdoch-sutherland.com/Rtools/}}. 
+The code for the R interface to Ipopt is available from R-Forge and from the Ipopt website. Additional information is also available on \texttt{http://www.ucl.ac.uk/\textasciitilde uctpjyy/ipoptr.html}. The R interface to Ipopt comes with the most recent version of Ipopt, so there is no need to download it separately.
 
-First, a file \texttt{Makevars} in the source directory of the interface package needs to be configured for your system from the file \texttt{Makevars.in}. The \texttt{configure\_ipoptr.R} script should make this easier. Start R, go to the directory where the \texttt{ipoptr} interface is located and load the script. In the code below, you should change the directories to the correct ones for your system.
-<<configureIpoptrStep1, eval=FALSE>>=
-setwd('~/ipoptr')
-source('configure_ipoptr.R')
-@
-Running this script defines a function \texttt{configure\_ipoptr}. Run the \texttt{configure\_ipoptr} command with the directory of the Ipopt build and the directory where \texttt{ipoptr} is located as arguments, e.g.
-<<configureIpoptrStep2, eval=FALSE>>=
-configure_ipoptr( ipopt.build.dir = "/cvos/shared/apps/Ipopt/3.5.5-source",
-                  ipoptr.dir = "~/ipoptr" )
-@
-The \texttt{ipoptr.build.dir} should have a file called \texttt{Makefile} in the subdirectory \texttt{/Ipopt/examples/hs071\_cpp}. If there were no errors, then a file called \texttt{Makevars} (or \texttt{Makevars.win} if you're using Windows) has now been created in the directory \texttt{ipoptr/src}. 
+Detailed installation instructions for Ipopt are available on \texttt{http://www.coin-or.org/Ipopt/documentation}. You should follow these first, before trying to install the R interface. Ipopt needs to be configured using the \texttt{-fPIC} flag for all GNU compilers. For 64bit Linux one needs to specify
+\begin{verbatim}
+ADD_CXXFLAGS='-fPIC' ADD_FFLAGS='-fPIC' ADD_CFLAGS='-fPIC'
+\end{verbatim}
 
-You can then install the package with the command
+For the installation of the R interface, I will assume that you have a working installation of Ipopt (i.e. \texttt{configure}, \texttt{make} and \texttt{make install} executed without problems).  
+
+During the installation of Ipopt a file \texttt{Makevars} has been created in the source directory of the R interface, e.g. \texttt{\$IPOPTDIR/build/Ipopt/contrib/RInterface/src} if you used the same build directory as in the Ipopt installation notes, \texttt{\$IPOPTDIR/build}. The file \texttt{Makevars} in this directory has been configured for your system. 
+
+To install the R interface, this file has to be copied to the Ipopt directory containing the source code, \texttt{\$IPOPTDIR/Ipopt/contrib/RInterface/src}. Notice that the path of this directory is different from the directory where you built Ipopt (\texttt{build} is not there).
+
+The source directory \texttt{\$IPOPTDIR/Ipopt/contrib/RInterface/src} contains four files, \texttt{ipoptr.cpp}, \texttt{IpoptRNLP.cpp}, \texttt{IpoptRNLP.hpp} and \texttt{Makevars.in}. Copy \texttt{Makevars} in this directory and, if you're on Windows, rename it to \texttt{Makevars.win}.
+
+You can then install the package from R with the command
 <<installIpoptPackage, eval=FALSE>>=
-install.packages('~/ipoptr', repos=NULL, type='source')
+install.packages('$IPOPTDIR/Ipopt/contrib/RInterface', repos=NULL, type='source')
 @
-where the first argument specifies the directory where the R interface to Ipopt is located. You should now be able to load the R interface to Ipopt and read the help.
+where the first argument specifies the directory where the source code for the R interface to Ipopt is located. You should now be able to load the R interface to Ipopt and read the help.
 <<testIpoptInstallation, eval=FALSE>>=
 library('ipoptr')
 ?ipoptr
@@ -121,7 +122,7 @@ res <- ipoptr( x0=x0,
                eval_f=eval_f, 
                eval_grad_f=eval_grad_f )
 @
-These are the minimal arguments that have to be supplied. If, like above, no Hessian is defined, Ipopt uses an approximation. We can see the results by printing the resulting object.
+These are the minimal arguments that have to be supplied. If, like above, no Hessian is defined, Ipopt uses an approximation. The Ipopt website has a detailed explanation of the output. We can see a summary of the results by printing the resulting object.
 <<printRosenbrockBanana>>=
 print( res )
 @
@@ -129,36 +130,42 @@ It's advised to always check the exit code for convergence of the problem and in
 
 If you do not want to, or cannot calculate the gradient analytically, you can supply a function \texttt{eval\_grad\_f} that approximates the gradient. However, this is not advisable and might result in convergence problems, for instance by not finding the minimum, or by finding the wrong minimum. We can see this from the following example where we approximate \texttt{eval\_grad\_f} using finite differences
 <<defineApproxGradF>>=
-# Approximate eval_f using finite differences
 # http://en.wikipedia.org/wiki/Numerical_differentiation
-approx_grad_f <- function( x ) {
-    minAbsValue     <- 0
-    stepSize        <- sqrt( .Machine$double.eps )
+finite.diff <- function( func, 
+                         x, 
+                         minAbsValue=0, 
+                         stepSize=sqrt( .Machine$double.eps ), ... ) {
 
-    # if we evaluate at 0, we need a different step size
-    stepSizeVec     <- ifelse( abs(x) <= minAbsValue, 
-                               stepSize^3, 
-                               x * stepSize )
+    stepSizeVec <- pmax( abs(x), 1 ) * stepSize 
     
-    x_prime <- x
-    f       <- eval_f( x )
-    grad_f  <- rep( 0, length(x) )
-    for (i in 1:length(x)) {
-        x_prime[i]      <- x[i] + stepSizeVec[i]
-        stepSizeVec[i]  <- x_prime[i] - x[i]
-
-        f_prime         <- eval_f( x_prime )
-        grad_f[i]       <- ( f_prime - f )/stepSizeVec[i]
-        x_prime[i]      <- x[i]
+    fx <- func( x, ... )
+    approx.gradf.index <- function(i, x, func, fx, stepSizeVec, ...) {
+        x_prime <- x
+        x_prime[i] <- x[i] + stepSizeVec[i]
+        stepSizeVec[i] <- x_prime[i] - x[i]
+        fx_prime <- func( x_prime, ... )
+        return( ( fx_prime - fx )/stepSizeVec[i] )
     }
+    grad_fx <- sapply( 1:length(x), 
+                       approx.gradf.index, 
+                       x=x, 
+                       func=func, 
+                       fx=fx, 
+                       stepSizeVec=stepSizeVec, 
+                       ... )
     
-    return( grad_f )
+    return( grad_fx )
+}
+
+# Approximate eval_f using finite differences
+approx_grad_f <- function( x ) {
+    return( finite.diff( eval_f, x ) )
 }
 @
-and using this approximation to minimize the same Rosenbrock Banana function.
+and using this approximation to minimize the same Rosenbrock Banana function. We suppress the output by the \texttt{printe\_level} option.
 <<solveRosenbrockBananaApproximation1>>=
 # increase the maximum number of iterations
-opts <- list("tol"=1.0e-8, "max_iter"=5000)
+opts <- list("tol"=1.0e-8, "max_iter"=5000, "print_level"=0)
  
 # solve Rosenbrock Banana function with approximated gradient
 print( ipoptr( x0=x0, 
@@ -173,7 +180,7 @@ sqrt( .Machine$double.eps )
 which is of the same order of magnitude. If we decrease the tolerance, the algorithm converges, but the solution is less precise than if we supply gradients and it takes more iterations to get there.
 <<solveRosenbrockBananaApproximation2>>=
 # decrease the convergence criterium
-opts <- list("tol"=1.0e-7)
+opts <- list("tol"=1.0e-7, "print_level"=0)
  
 # solve Rosenbrock Banana function with approximated gradient
 print( ipoptr( x0=x0, 
@@ -429,6 +436,7 @@ Then we can solve the problem for a specific set of parameters, in this case $a_
 ipoptr( x0          = 0, 
         eval_f      = eval_f_ex1, 
         eval_grad_f = eval_grad_f_ex1,
+        opts        = list("print_level"=0),
         params      = c(1,2,3) )
 @
 
@@ -453,7 +461,8 @@ To solve this we supply \texttt{auxdata} as an argument to \texttt{ipoptr}, whic
 ipoptr( x0                 = 0, 
         eval_f             = eval_f_ex2, 
         eval_grad_f        = eval_grad_f_ex2, 
-        ipoptr_environment = auxdata )
+        ipoptr_environment = auxdata,
+        opts               = list("print_level"=0) )
 @
 
 \section{Options}
@@ -462,7 +471,7 @@ There are many options available, all of which are described on the Ipopt websit
 \section{Remarks}
 If you run many large optimization problems in a row on Windows, at some point you'll get errors that Mumps is running out of memory and you won't get any solutions. On Linux this same problem hasn't occurred yet.
 
-The R terminal in Windows doesn't show any output. The Linux one does.
+From version 0.8.2 output is shown in the R terminal under Windows as well.
 
 \bibliographystyle{apacite}
 \bibliography{reflist}

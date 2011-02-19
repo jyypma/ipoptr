@@ -1,11 +1,9 @@
 # Copyright (C) 2010 Jelmer Ypma. All Rights Reserved.
-# This code is published under the Common Public License.
+# This code is published under the Eclipse Public License.
 #
 # File:   ipoptr.R
 # Author: Jelmer Ypma
 # Date:   18 April 2010
-#
-# Thanks to Alexios Ghalanos for mentioning how to pass parameters to user-defined functions through ...
 #
 # Input: 
 #		x0 : vector with initial values
