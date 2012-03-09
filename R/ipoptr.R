@@ -6,7 +6,9 @@
 # Date:   18 April 2010
 #
 # Changelog:
-#   09/03/2012: added outputs, z_L, z_U, constraints, lambda (thanks to Michael Schedl)
+#   09/03/2012: Added outputs, z_L, z_U, constraints, lambda (thanks to Michael Schedl)
+#   09/03/2012: Removed ipoptr_environment because this caused a bug in combination with 
+#               data.table and it wasn't useful (thanks to Florian Oswald for reporting)
 #
 # Input: 
 #		x0 : vector with initial values
@@ -50,20 +52,12 @@ function( x0,
           eval_h = NULL,
           eval_h_structure = NULL,
           opts = list(),
-          ipoptr_environment = new.env(),
           ... ) {
     
     # define 'infinite' lower and upper bounds of the control if they haven't been set
     if ( is.null( lb ) ) { lb <- rep( -Inf, length(x0) ) }
     if ( is.null( ub ) ) { ub <- rep(  Inf, length(x0) ) }
 
-    # change the environment of the functions that we're calling
-    # the environment of the hessian is changed below (if it exists)
-    environment( eval_f ) <- ipoptr_environment
-    environment( eval_grad_f ) <- ipoptr_environment
-    environment( eval_g ) <- ipoptr_environment
-    environment( eval_jac_g ) <- ipoptr_environment
-    
     # internal function to check the arguments of the functions
     checkFunctionArguments <- function( fun, arglist, funname ) {
 		if( !is.function(fun) ) stop(paste(funname, " must be a function\n", sep = ""))
@@ -127,7 +121,6 @@ function( x0,
         opts$hessian_approximation <- "limited-memory"
         eval_h_wrapper = NULL
     } else {
-        environment( eval_h ) <- ipoptr_environment     # change environment
         checkFunctionArguments( eval_h, c( arglist, obj_factor=0, hessian_lambda=0 ), 'eval_h' )
         eval_h_wrapper = function( x, obj_factor, hessian_lambda ) { eval_h(x, obj_factor, hessian_lambda, ...) }
     }
@@ -147,8 +140,7 @@ function( x0,
                  "eval_jac_g_structure"=eval_jac_g_structure,
                  "eval_h"=eval_h_wrapper,
                  "eval_h_structure"=eval_h_structure,
-                 "options"=get.option.types(opts),
-                 "ipoptr_environment"=ipoptr_environment )
+                 "options"=get.option.types(opts) )
     
     attr(ret, "class") <- "ipoptr"
     
@@ -160,9 +152,6 @@ function( x0,
     
     # pass ipoptr object to C code
     solution <- .Call( IpoptRSolve, ret )
-    
-    # remove the environment from the return object
-    ret$environment <- NULL
     
     # add solution variables to object
     ret$status      <- solution$status
