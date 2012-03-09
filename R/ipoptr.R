@@ -5,6 +5,9 @@
 # Author: Jelmer Ypma
 # Date:   18 April 2010
 #
+# Changelog:
+#   09/03/2012: added outputs, z_L, z_U, constraints, lambda (thanks to Michael Schedl)
+#
 # Input: 
 #		x0 : vector with initial values
 #		eval_f : function to evaluate objective function
@@ -22,12 +25,16 @@
 #       ... : arguments that will be passed to user-defined functions
 #
 # Output: structure with inputs and
-#		call : the call that was made to solve
-#		status : integer value with the status of the optimization (0 is success)
-#		message : more informative message with the status of the optimization
-#		iterations : number of iterations that were executed
-#		objective : value if the objective function in the solution
-#		solution : optimal value of the controls
+#		call        : the call that was made to solve
+#		status      : integer value with the status of the optimization (0 is success)
+#		message     : more informative message with the status of the optimization
+#		iterations  : number of iterations that were executed
+#		objective   : final value of the objective function
+#		solution    : final values for the controls
+#       z_L         : final values for the lower bound multipliers
+#       z_U         : final values for the upper bound multipliers
+#       constraints : final values for the constraints
+#       lambda      : final values for the Lagrange mulipliers
 
 ipoptr <-
 function( x0, 
@@ -158,11 +165,15 @@ function( x0,
     ret$environment <- NULL
     
     # add solution variables to object
-    ret$status <- solution$status
-    ret$message <- solution$message
-    ret$iterations <- solution$iterations
-    ret$objective <- solution$objective
-    ret$solution <- solution$solution
+    ret$status      <- solution$status
+    ret$message     <- solution$message
+    ret$iterations  <- solution$iterations
+    ret$objective   <- solution$objective
+    ret$solution    <- solution$solution
+    ret$z_L         <- solution$z_L
+    ret$z_U         <- solution$z_U
+    ret$constraints <- solution$constraints
+    ret$lambda      <- solution$lambda
     
     return( ret )
 }
